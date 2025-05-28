@@ -3,6 +3,9 @@ const express = require("express");
 const { z } = require("zod");
 const userRouter = express.Router();
 const { userModel } = require("../db"); // make sure this path is correct
+const { email } = require("zod/v4");
+const jwt = requiore(jsonwebtoken);
+require("dotenv").config();
 
 userRouter.use(express.json());
 // Signup Route
@@ -40,6 +43,37 @@ userRouter.post("/signup", async function (req, res) {
 
   // 6. Success response
   res.status(200).json({ message: "Signup successful" });
+});
+// Signin Route With Jwt verification
+userRouter.post("/signin", async function (req, res) {
+  const { email, password } = req.body;
+  const user = await userModel.findOne({
+    email: email,
+  });
+  if (!user) {
+    res.status(404).send({
+      message: "User Not Found",
+    });
+  }
+
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  if (isPasswordMatch) {
+    const token = jwt.sign(
+      {
+        id: user._id.toString(),
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    res.json({
+      token: token,
+    });
+  } else {
+    res.status(403).json({
+      message: "Wrong Crediantials !!!",
+    });
+  }
 });
 
 module.exports = { userRouter };
