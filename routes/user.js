@@ -4,8 +4,12 @@ const { z } = require("zod");
 const userRouter = express.Router();
 const { userModel } = require("../db"); // make sure this path is correct
 const { email } = require("zod/v4");
-const jwt = requiore(jsonwebtoken);
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
+
+const jwtuser = process.env.JWT_SECRET_USER;
+
+console.log("Secret key is:", jwtuser);
 
 userRouter.use(express.json());
 // Signup Route
@@ -63,7 +67,7 @@ userRouter.post("/signin", async function (req, res) {
       {
         id: user._id.toString(),
       },
-      process.env.JWT_SECRET,
+      jwtuser,
       { expiresIn: "1d" }
     );
     res.json({
