@@ -121,11 +121,23 @@ adminRouter.put("/course", adminMiddleware, async function (req, res) {
   );
 
   res.json({
-    message: "Course Created !!!",
+    message: "Course Updated !!!",
     courseId: course._id,
   });
 });
-adminRouter.put("/course", function (req, res) {});
+
+adminRouter.put("/course/bulk", adminMiddleware, async function (req, res) {
+  const adminId = req.adminId;
+
+  const courses = await courseModel.find({
+    creatorId: adminId,
+  });
+
+  res.json({
+    message: "Course Updated !!!",
+    courses,
+  });
+});
 
 adminRouter.get("/course/bulk", function (req, res) {});
 
