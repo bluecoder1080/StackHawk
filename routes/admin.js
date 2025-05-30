@@ -1,11 +1,12 @@
 const { Router } = require("express");
 const bcrypt = require("bcrypt");
 const adminRouter = Router();
-const { adminModel } = require("../db");
+const { adminModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { z } = require("zod");
 const express = require("express");
+const { adminMiddleware } = require("../middlewares/adminMiddleware");
 const jwtadmin = process.env.JWT_SECRET_ADMIN;
 console.log(jwtadmin);
 
@@ -21,7 +22,6 @@ adminRouter.post("/signup", async function (req, res) {
     lastName: z.string().trim().min(1),
   });
 
-
   // 2. Validate user input
   const validation = signupSchema.safeParse(req.body);
   if (!validation.success) {
@@ -31,9 +31,6 @@ adminRouter.post("/signup", async function (req, res) {
       ),
     });
   }
-
-
-
 
   // 3. Destructure data from validated input
   const { email, password, firstName, lastName } = validation.data;
@@ -52,7 +49,7 @@ adminRouter.post("/signup", async function (req, res) {
   res.status(200).json({ message: "Signup successful" });
 });
 
-/////////////////////////// SignIn Route/////////////////////////////////
+//Signin EndPoint ...
 adminRouter.post("/signin", async function (req, res) {
   const { email, password } = req.body;
   const admin = await adminModel.findOne({
@@ -60,16 +57,16 @@ adminRouter.post("/signin", async function (req, res) {
   });
   if (!admin) {
     res.status(404).send({
-      message: "User Not Found",
+      message: "admin Not Found",
     });
   }
 
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  const isPasswordMatch = await bcrypt.compare(password, admin.password);
 
   if (isPasswordMatch) {
     const token = jwt.sign(
       {
-        id: user._id.toString(),
+        id: admin._id.toString(),
       },
       jwtadmin,
       { expiresIn: "1d" }
@@ -84,6 +81,24 @@ adminRouter.post("/signin", async function (req, res) {
   }
 });
 
+adminRouter.post("/course", adminMiddleware, async function (req, res) {
+  const adminId = req.adminId;
+
+  const { title, discription, imageUrl, price } = req.body;
+
+  const course = await courseModel.create({
+    title,
+    discription,
+    imageUrl,
+    price,
+    creatorId: adminId,
+  });
+
+  res.json({
+    message: "Course Created !!!",
+    courseId: course._id,
+  });
+});
 ///api/v1/admin/
 adminRouter.post("/course", function (req, res) {});
 adminRouter.put("/course", function (req, res) {});
