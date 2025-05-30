@@ -80,7 +80,7 @@ adminRouter.post("/signin", async function (req, res) {
     });
   }
 });
-
+// Create Course EndPoint ...
 adminRouter.post("/course", adminMiddleware, async function (req, res) {
   const adminId = req.adminId;
 
@@ -100,7 +100,31 @@ adminRouter.post("/course", adminMiddleware, async function (req, res) {
   });
 });
 ///api/v1/admin/
-adminRouter.post("/course", function (req, res) {});
+// Update the Course ..
+adminRouter.put("/course", adminMiddleware, async function (req, res) {
+  const adminId = req.adminId;
+
+  const { title, discription, imageUrl, price, courseId } = req.body;
+
+  const course = await courseModel.updateOne(
+    {
+      _id: courseId,
+      creatorId: adminId,
+    },
+    {
+      title,
+      discription,
+      imageUrl,
+      price,
+      creatorId: adminId,
+    }
+  );
+
+  res.json({
+    message: "Course Created !!!",
+    courseId: course._id,
+  });
+});
 adminRouter.put("/course", function (req, res) {});
 
 adminRouter.get("/course/bulk", function (req, res) {});
